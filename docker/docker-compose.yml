@@ -14,7 +14,7 @@ services:
 
   wordpress:
     container_name: wp-site
-    image: wordpress:5.8
+    image: wordpress:latest
     depends_on:
       - db
     ports:
