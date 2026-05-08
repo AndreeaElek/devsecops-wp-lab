@@ -1,0 +1,53 @@
+[span_6](start_span)name: WordPress WPScan - Vulnerability Discovery[span_6](end_span)
+
+on:
+  push:
+    [span_7](start_span)branches: [ main ][span_7](end_span)
+
+jobs:
+  wordpress-wpscan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        [span_8](start_span)uses: actions/checkout@v4[span_8](end_span)
+
+      - name: Set up Docker
+        run: |
+          [span_9](start_span)docker version[span_9](end_span)
+
+      - name: Start MySQL
+        run: |
+          docker run -d --name wp-db \
+            -e MYSQL_ROOT_PASSWORD=password \
+            -e MYSQL_DATABASE=wordpress \
+            -e MYSQL_USER=wpuser \
+            -e MYSQL_PASSWORD=wppass \
+            -p 3306:3306 \
+            [span_10](start_span)mysql:5.7[span_10](end_span)
+
+      - name: Start WordPress
+        run: |
+          docker run -d --name wp-site \
+            --link wp-db:mysql \
+            -e WORDPRESS_DB_HOST=wp-db:3306 \
+            -e WORDPRESS_DB_USER=wpuser \
+            -e WORDPRESS_DB_PASSWORD=wppass \
+            -e WORDPRESS_DB_NAME=wordpress \
+            -p 8080:80 \
+            [span_11](start_span)wordpress:5.8[span_11](end_span)
+
+      - name: Wait for WordPress
+        run: |
+          [span_12](start_span)echo "Waiting for WordPress to start..."[span_12](end_span)
+          [span_13](start_span)sleep 30[span_13](end_span)
+
+      - name: Install WPScan
+        run: |
+          [span_14](start_span)sudo apt-get update[span_14](end_span)
+          [span_15](start_span)sudo apt-get install -y ruby-full build-essential libcurl4-openssl-dev zlib1g-dev[span_15](end_span)
+          [span_16](start_span)sudo gem install wpscan[span_16](end_span)
+
+      - name: Run WPScan
+        run: |
+          [span_17](start_span)wpscan --url http://localhost:8080 --enumerate u,vp,vt --force --format cli-no-color[span_17](end_span)
