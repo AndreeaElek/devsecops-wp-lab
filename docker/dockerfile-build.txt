@@ -1,0 +1,5 @@
+# Use the latest secure version of WordPress as the base
+FROM wordpress:latest
+
+# Standard security updates during build
+RUN apt-get update && apt-get upgrade -y && apt-get clean
